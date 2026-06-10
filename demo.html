@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aspirant's Chess Academy</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Core Variables --- */
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-dark: #0f172a;
+            --text-light: #475569;
+            --accent-gold: #b8905b;
+            --primary-blue: #2563eb;
+            --primary-blue-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+            --whatsapp-green: #25D366;
+            --transition-curve: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- Reset & Typography --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--bg-color); color: var(--text-dark);
+            font-family: 'Source Sans 3', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .brand-text { font-family: 'Playfair Display', serif; font-weight: 700; }
+
+        /* --- Scroll Progress Bar --- */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px; background: var(--primary-blue);
+            z-index: 2001; width: 0%; transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+        }
+
+        /* --- Animations --- */
+        .fade-up {
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 1s var(--transition-curve), transform 1s var(--transition-curve);
+            will-change: transform, opacity;
+        }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        @keyframes floatEffect {
+            0% { transform: translate(-50%, 0px); }
+            50% { transform: translate(-50%, -8px); }
+            100% { transform: translate(-50%, 0px); }
+        }
+
+        @keyframes dynamicBackground {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-1%, -1%); }
+        }
+        @keyframes floatingSquares {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Navigation --- */
+        header {
+            background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed; width: 100%; top: 0; z-index: 1000; padding: 1rem 5%; transition: all 0.5s var(--transition-curve);
+        }
+        header.scrolled { padding: 0.6rem 5%; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        nav { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; position: relative;}
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); transition: transform 0.3s ease; }
+        .brand:hover { transform: scale(1.02); }
+        .brand-icon { font-size: 2rem; color: var(--accent-gold); }
+        
+        /* Mobile Menu Toggle Styling */
+        .menu-toggle {
+            display: none; font-size: 1.8rem; color: var(--text-dark); cursor: pointer; transition: color 0.3s ease;
+        }
+        .menu-toggle:hover { color: var(--primary-blue); }
+
+        .nav-links { display: flex; align-items: center; gap: 2.5rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: var(--text-light); font-weight: 600; transition: color 0.2s, transform 0.2s; display: inline-block;}
+        .nav-links a:hover { color: var(--primary-blue); transform: translateY(-1px); }
+        
+        .btn-nav {
+            background: var(--primary-blue); color: #fff !important; padding: 0.6rem 1.5rem;
+            border-radius: 6px; transition: all 0.3s var(--transition-curve) !important; border: none; cursor: pointer; font-weight: 600;
+            position: relative; overflow: hidden;
+        }
+        .btn-nav::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%; background: rgba(255,255,255,0.2);
+            transform: rotate(30deg); transition: all 0.5s ease;
+        }
+        .btn-nav:hover { background-color: var(--primary-blue-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
+        .btn-nav:hover::after { left: 140%; }
+
+        /* --- Hero Section --- */
+        .hero {
+            position: relative; color: #ffffff; padding: 12rem 5% 8rem; text-align: center;
+            border-bottom: 6px solid var(--primary-blue); min-height: 90vh; display: flex; flex-direction: column; justify-content: center;
+            overflow: hidden; background-color: #0f172a; 
+        }
+        
+        .hero-bg-animated {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1529699211952-734e80c4d42b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+            z-index: 1; animation: dynamicBackground 20s infinite alternate linear; will-change: transform;
+        }
+        .hero-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.98)); z-index: 2;
+        }
+        .hero-shapes { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 3; pointer-events: none; }
+        .shape { 
+            position: absolute; display: block; list-style: none; background: rgba(255, 255, 255, 0.1); 
+            bottom: -150px; animation: floatingSquares 25s infinite linear; border-radius: 4px;
+        }
+        .shape:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .shape:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .shape:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .shape:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .shape:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .shape:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+
+        .hero-content { position: relative; z-index: 10; }
+
+        .hero-subtitle {
+            text-transform: uppercase; letter-spacing: 4px; font-size: 0.9rem;
+            color: var(--accent-gold); margin-bottom: 1.5rem; display: block; font-weight: 700;
+        }
+        .hero h1 { font-size: 4.5rem; line-height: 1.1; margin-bottom: 1.5rem; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .hero p { font-size: 1.25rem; color: #cbd5e1; margin-bottom: 3rem; max-width: 650px; margin-left: auto; margin-right: auto; }
+
+        /* --- Why Choose Us Section --- */
+        .features-section { padding: 6rem 5%; background-color: var(--surface-color); }
+        .section-header { max-width: 800px; margin: 0 auto 4rem; text-align: center; }
+        .section-header h2 { font-size: 2.8rem; color: var(--text-dark); margin-bottom: 1rem; }
+        .section-header p { color: var(--text-light); font-size: 1.1rem; }
+        
+        .features-grid {
+            max-width: 1200px; margin: 0 auto; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2.5rem;
+        }
+        .feature-box {
+            padding: 2.5rem; border-radius: 12px; background: var(--bg-color);
+            border: 1px solid var(--border-color); text-align: center; 
+            transition: transform 0.6s var(--transition-curve), box-shadow 0.6s var(--transition-curve);
+            will-change: transform, box-shadow;
+        }
+        .feature-box:hover { 
+            transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.06); border-color: var(--accent-gold);
+        }
+        
+        @keyframes pulseIcon { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .feature-box .icon { font-size: 3rem; color: var(--accent-gold); margin-bottom: 1rem; display: block; transition: transform 0.3s ease; }
+        .feature-box:hover .icon { animation: pulseIcon 1s infinite; }
+        
+        .feature-box h3 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--text-dark); }
+        .feature-box p { color: var(--text-light); font-size: 0.95rem; }
+
+        /* --- Stats Parallax Section --- */
+        .stats-section {
+            background: linear-gradient(rgba(37, 99, 235, 0.9), rgba(15, 23, 42, 0.95)), 
+                        url('https://images.unsplash.com/photo-1580541832626-2a7131ee809f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed;
+            padding: 6rem 5%; color: white; text-align: center;
+        }
+        .stats-grid {
+            max-width: 1000px; margin: 0 auto; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem;
+        }
+        .stat-item h4 { 
+            font-size: 3.5rem; color: var(--accent-gold); margin-bottom: 0.5rem; 
+            font-family: 'Source Sans 3'; font-weight: 700; font-variant-numeric: tabular-nums; 
+        }
+        .stat-item p { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; color: #e2e8f0; }
+
+        /* --- About Mentor Section --- */
+        .mentor-section {
+            padding: 8rem 5%; background-color: var(--surface-color);
+        }
+        .mentor-container {
+            max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 5rem;
+        }
+        .mentor-image-wrapper {
+            flex: 1; min-width: 300px; position: relative;
+        }
+        .mentor-image-wrapper img {
+            width: 100%; max-width: 450px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: block; margin: 0 auto; object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+        .mentor-image-wrapper::before {
+            content: ''; position: absolute; top: -20px; left: 10%; width: 120px; height: 120px;
+            background: radial-gradient(var(--accent-gold) 2px, transparent 2px);
+            background-size: 15px 15px; z-index: -1; opacity: 0.4;
+        }
+        .mentor-image-wrapper::after {
+            content: ''; position: absolute; bottom: -20px; right: 10%; width: 100%; height: 100%;
+            border: 3px solid var(--primary-blue); border-radius: 16px; z-index: -2;
+            transform: translate(20px, 20px); transition: transform 0.5s ease;
+        }
+        .mentor-container:hover .mentor-image-wrapper::after {
+            transform: translate(10px, 10px);
+        }
+        
+        .mentor-content {
+            flex: 1; min-width: 320px;
+        }
+        .mentor-content h2 { font-size: 3rem; color: var(--text-dark); margin-bottom: 0.2rem; }
+        .mentor-title { color: var(--primary-blue); font-weight: 700; font-size: 1.1rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .mentor-content p { color: var(--text-light); font-size: 1.1rem; margin-bottom: 1.2rem; line-height: 1.8;}
+        
+        .mentor-stats { display: flex; gap: 3rem; margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 2rem; }
+        .m-stat h4 { font-size: 2.5rem; color: var(--text-dark); font-family: 'Source Sans 3'; font-weight: 700; margin-bottom: 0.2rem;}
+        .m-stat span { color: var(--text-light); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        /* --- Modern Programs Grid --- */
+        .programs-section { padding: 8rem 5% 6rem; background-color: var(--bg-color); text-align: center; }
+        .programs-grid {
+            max-width: 1200px; margin: 0 auto; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 4rem 3rem; margin-top: 5rem;
+        }
+
+        .program-card {
+            background: var(--surface-color); border-radius: 16px; padding: 4rem 2rem 2rem;
+            position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: left;
+            transition: all 0.6s var(--transition-curve); border: 1px solid var(--border-color); display: flex; flex-direction: column;
+            will-change: transform, box-shadow;
+        }
+        .program-card:hover { transform: translateY(-10px); box-shadow: 0 25px 50px rgba(0,0,0,0.1); border-color: var(--primary-blue); }
+
+        .program-popout {
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            width: 100px; height: 100px; background: linear-gradient(135deg, #ffffff, #f1f5f9);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 3.5rem; box-shadow: 0 15px 25px rgba(0,0,0,0.1); border: 4px solid #fff; transition: all 0.4s ease;
+        }
+        .program-card:hover .program-popout { animation: floatEffect 2s ease-in-out infinite; box-shadow: 0 20px 30px rgba(37, 99, 235, 0.2); color: var(--primary-blue); }
+
+        .program-brand { font-size: 1.2rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 1rem; display: block; text-transform: uppercase; letter-spacing: 1px;}
+        
+        .badge-container { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.3s ease; }
+        .program-card:hover .badge { transform: scale(1.05); }
+        .badge-purple { background: #f3e8ff; color: #7e22ce; }
+        .badge-cyan { background: #e0f2fe; color: #0369a1; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
+
+        .program-title { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin-bottom: 1.5rem; line-height: 1.4; font-family: 'Source Sans 3';}
+        
+        .program-details { flex-grow: 1; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-bottom: 1.5rem; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; font-size: 0.95rem; }
+        .detail-label { color: var(--text-light); }
+        .detail-value { font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 5px; }
+
+        .btn-card {
+            display: block; width: 100%; text-align: center; background: var(--primary-blue);
+            color: #fff; padding: 1rem; border-radius: 8px; font-weight: 700; text-decoration: none;
+            transition: all 0.3s; border: none; cursor: pointer; font-size: 1rem;
+            position: relative; overflow: hidden;
+        }
+        .btn-card::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%; background: rgba(255,255,255,0.2);
+            transform: rotate(30deg); transition: all 0.5s ease;
+        }
+        .btn-card:hover { background: var(--primary-blue-hover); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+        .btn-card:hover::after { left: 140%; }
+
+        /* --- Learning Journey Section --- */
+        .journey-section { padding: 6rem 5%; background-color: var(--surface-color); }
+        .journey-grid { 
+            max-width: 1200px; margin: 0 auto; display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; 
+        }
+        .journey-step { text-align: center; padding: 2rem; position: relative; }
+        
+        @media (min-width: 992px) {
+            .journey-step:not(:last-child)::after {
+                content: '→'; position: absolute; top: 55px; right: -20px; font-size: 2rem; color: var(--border-color);
+                transition: color 0.3s ease, transform 0.3s ease;
+            }
+            .journey-step:hover:not(:last-child)::after { color: var(--accent-gold); transform: translateX(5px); }
+        }
+
+        .step-number { 
+            width: 70px; height: 70px; background: var(--primary-blue); color: white; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 1.8rem; font-weight: bold; margin: 0 auto 1.5rem; 
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); transition: all 0.3s var(--transition-curve);
+        }
+        .journey-step:hover .step-number { transform: scale(1.1) rotate(10deg); background: var(--primary-blue-hover); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4); }
+        .journey-step h3 { color: var(--text-dark); margin-bottom: 1rem; font-size: 1.5rem; transition: color 0.3s ease;}
+        .journey-step:hover h3 { color: var(--primary-blue); }
+        .journey-step p { color: var(--text-light); font-size: 1rem; }
+
+        /* --- Testimonials Section --- */
+        .testimonials-section { padding: 6rem 5%; background-color: var(--bg-color); }
+        .testimonial-grid { 
+            max-width: 1200px; margin: 0 auto; display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; 
+        }
+        .testimonial-card { 
+            background: var(--surface-color); padding: 3rem 2.5rem; border-radius: 12px; 
+            border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.02); 
+            transition: all 0.6s var(--transition-curve); display: flex; flex-direction: column;
+            will-change: transform, box-shadow;
+        }
+        .testimonial-card:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--border-color); }
+        
+        @keyframes starTwinkle { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .stars { color: var(--accent-gold); margin-bottom: 1.5rem; font-size: 1.2rem; letter-spacing: 2px;}
+        .testimonial-card:hover .stars { animation: starTwinkle 1s infinite ease-in-out; }
+
+        .quote { font-style: italic; color: var(--text-light); margin-bottom: 2rem; font-size: 1.05rem; flex-grow: 1; position: relative; padding-left: 1rem;}
+        .quote::before { content: '"'; position: absolute; left: -5px; top: -10px; font-size: 3rem; color: #e2e8f0; font-family: serif; line-height: 1; }
+
+        .author-info { border-top: 1px solid var(--border-color); padding-top: 1.5rem; transition: border-color 0.3s ease;}
+        .testimonial-card:hover .author-info { border-color: #cbd5e1; }
+        .author-info strong { color: var(--text-dark); display: block; font-size: 1.1rem;}
+        .author-info span { font-size: 0.85rem; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
+
+        /* --- Floating WhatsApp Button --- */
+        .whatsapp-float {
+            position: fixed; bottom: 30px; right: 30px; background-color: var(--whatsapp-green);
+            color: white; border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px;
+            font-weight: 600; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); z-index: 1000;
+            text-decoration: none; transition: all 0.3s var(--transition-curve); cursor: pointer;
+            animation: pulseWhatsApp 2s infinite;
+        }
+        @keyframes pulseWhatsApp {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        .whatsapp-float:hover { transform: scale(1.05) translateY(-5px); background-color: #20ba5a; animation: none; }
+        .whatsapp-icon { font-size: 1.5rem; font-family: sans-serif; }
+
+        /* --- Modal Styling --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); z-index: 2000;
+            display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.5s var(--transition-curve);
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-content {
+            background: var(--surface-color); padding: 3rem; border-radius: 12px; width: 90%; max-width: 450px;
+            position: relative; transform: scale(0.9) translateY(30px); transition: all 0.5s var(--transition-curve);
+            will-change: transform, opacity;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        
+        .close-modal {
+            position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; color: var(--text-light); transition: color 0.2s, transform 0.2s;
+        }
+        .close-modal:hover { color: var(--text-dark); transform: rotate(90deg); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; transition: color 0.3s ease; }
+        .form-group input:focus + label, .form-group select:focus + label { color: var(--primary-blue); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        /* --- Footer --- */
+        footer { 
+            background: linear-gradient(rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.98)), url('https://www.transparenttextures.com/patterns/cubes.png');
+            color: #ffffff; padding: 5rem 5% 2rem; text-align: center; position: relative; z-index: 10;
+        }
+        @keyframes rotateKnight { 0% { transform: rotate(0deg); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-10deg); } 30% { transform: rotate(0deg); } 100% { transform: rotate(0deg); } }
+        .footer-logo:hover { animation: rotateKnight 1s ease-in-out; display: inline-block; }
+        .footer-bottom { border-top: 1px solid #1e293b; padding-top: 2rem; margin-top: 3rem; font-size: 0.85rem; color: #94a3b8; }
+
+        /* Responsive - MOBILE STYLES UPDATED HERE */
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 5%; }
+            .hero h1 { font-size: 3rem; }
+            .section-header h2 { font-size: 2.2rem; }
+            .mentor-container { gap: 3rem; text-align: center; }
+            .mentor-image-wrapper::after { display: none; }
+            .mentor-stats { justify-content: center; }
+            
+            /* Responsive Navigation */
+            .menu-toggle { display: block; }
+            
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--surface-color);
+                flex-direction: column;
+                padding: 0;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                border-bottom: 1px solid transparent;
+            }
+            
+            .nav-links.active {
+                max-height: 400px; /* Large enough to fit content */
+                padding: 2rem 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .nav-links li { width: 100%; text-align: center; }
+            .nav-links a { display: block; padding: 0.8rem 0; font-size: 1.1rem; }
+            
+            /* Center the request callback button in mobile menu */
+            .nav-links .btn-nav { 
+                margin: 0.5rem auto 0;
+                width: 80%;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <header id="header">
+        <nav>
+            <a href="#" class="brand">
+                <img src="1.png" width="150" alt="Academy Logo">
+            </a>
+            
+            <div class="menu-toggle" id="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#programs">Programs</a></li>
+                <li><a href="#expectations">Expectations</a></li>
+                <li><button class="btn-nav open-modal-btn">Request Callback</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="hero-bg-animated"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-shapes">
+            <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+            <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+        </div>
+
+        <div class="fade-up hero-content">
+            <span class="hero-subtitle">Designed to transform your game</span>
+            <h1>Become a Highly Skilled<br>Chess Professional.</h1>
+            <p>From absolute beginners to competitive tournament players, our structured curriculum and data-driven approach will guide your strategic mastery.</p>
+            <button class="btn-nav open-modal-btn" style="padding: 1.2rem 3rem; font-size: 1.1rem;">Enroll Now</button>
+        </div>
+    </section>
+
+    <section class="features-section" id="about">
+        <div class="section-header fade-up">
+            <h2>Why Choose Aspirant's?</h2>
+            <p>We go beyond moving pieces. We build analytical minds ready for state, national, and international FIDE tournaments.</p>
+        </div>
+
+        <div class="features-grid anim-group-stagger">
+            <div class="feature-box fade-up">
+                <span class="icon"><i class="fas fa-medal"></i></span>
+                <h3>FIDE Rated Coaches</h3>
+                <p>Learn directly from professionals who have walked the path and understand the psychology of competitive chess.</p>
+            </div>
+            <div class="feature-box fade-up">
+                <span class="icon"><i class="fas fa-puzzle-piece"></i></span>
+                <h3>Weekly Puzzle Labs</h3>
+                <p>Dedicated sessions strictly focused on tactical pattern recognition to sharpen your board vision and calculation speed.</p>
+            </div>
+            <div class="feature-box fade-up">
+                <span class="icon"><i class="fas fa-microchip"></i></span>
+                <h3>Engine Analysis</h3>
+                <p>Post-game analysis using industry-standard chess engines to objectively identify inaccuracies and build opening repertoires.</p>
+            </div>
+            <div class="feature-box fade-up">
+                <span class="icon"><i class="fas fa-trophy"></i></span>
+                <h3>Practice Tournaments</h3>
+                <p>Monthly simulated events played under official time controls to build mental stamina and eliminate tournament anxiety.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section fade-up">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h4 class="counter" data-target="500">0</h4>
+                <p>Active Students</p>
+            </div>
+            <div class="stat-item">
+                <h4 class="counter" data-target="15">0</h4>
+                <p>State Champions</p>
+            </div>
+            <div class="stat-item">
+                <h4 class="counter" data-target="100" data-suffix="%">0</h4>
+                <p>Rating Improvement</p>
+            </div>
+            <div class="stat-item">
+                <h4 class="counter" data-target="4">0</h4>
+                <p>Distinct Master Levels</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="mentor-section">
+        <div class="mentor-container fade-up">
+            <div class="mentor-image-wrapper">
+                <img src="mentor.jpeg" alt="B. Ajay Kumar - Mentor">
+            </div>
+            <div class="mentor-content">
+                <span class="hero-subtitle" style="color: var(--primary-blue); margin-bottom: 0.5rem;">Meet Your Mentor</span>
+                <h2>B. Ajay Kumar</h2>
+                <div class="mentor-title">Founder of Aspirant's Chess Academy</div>
+                <p>With years of intense competitive chess experience and a passion for teaching, Ajay Kumar has dedicated his career to nurturing the next generation of sharp, strategic minds.</p>
+                <p>His deeply analytical approach to the game, combined with an understanding of tournament psychology, helps students move beyond memorizing lines to truly grasping the geometry of the board.</p>
+                <div class="mentor-stats">
+                    <div class="m-stat">
+                        <h4>FIDE</h4>
+                        <span>Rated Player</span>
+                    </div>
+                    <div class="m-stat">
+                        <h4>1000+</h4>
+                        <span>Hours Coached</span>
+                    </div>
+                    <div class="m-stat">
+                        <h4>10000+</h4>
+                        <span>Student's Trained</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="programs-section" id="programs">
+        <div class="section-header fade-up">
+            <h2>Our Progression Programs</h2>
+            <p>Choose the track that fits your current skill level and accelerate your learning.</p>
+        </div>
+        
+        <div class="programs-grid anim-group-stagger">
+            <div class="program-card fade-up">
+                <div class="program-popout">♟</div>
+                <span class="program-brand">Level 1: Pawn</span>
+                
+                <div class="badge-container">
+                    <span class="badge badge-purple">UNRATED</span>
+                    <span class="badge badge-cyan">BEGINNER FOUNDATION</span>
+                </div>
+                
+                <h3 class="program-title">Learn board mechanics and achieve confident, rule-perfect gameplay.</h3>
+                
+                <div class="program-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">3 Months</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">🔥 Batch Starts Soon</span>
+                    </div>
+                </div>
+                
+                <button class="btn-card open-modal-btn">Request Callback</button>
+            </div>
+
+            <div class="program-card fade-up">
+                <div class="program-popout">♞</div>
+                <span class="program-brand" style="color: #6a1b9a;">Level 2: Knight</span>
+                
+                <div class="badge-container">
+                    <span class="badge badge-green">INTERMEDIATE</span>
+                    <span class="badge badge-orange">TACTICAL FOCUS</span>
+                </div>
+                
+                <h3 class="program-title">A proven program to build your attacking ideas and pattern recognition.</h3>
+                
+                <div class="program-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">4 Months</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">🔥 Admissions Open</span>
+                    </div>
+                </div>
+                
+                <button class="btn-card open-modal-btn">Know More</button>
+            </div>
+
+            <div class="program-card fade-up">
+                <div class="program-popout">♛</div>
+                <span class="program-brand" style="color: #c62828;">Level 3/4: Queen</span>
+                
+                <div class="badge-container">
+                    <span class="badge badge-purple">ADVANCED</span>
+                    <span class="badge badge-cyan">TOURNAMENT PREP</span>
+                </div>
+                
+                <h3 class="program-title">Industry-ready performance training for State & FIDE competitions.</h3>
+                
+                <div class="program-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">6 - 12 Months</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">🔥 Limited Seats</span>
+                    </div>
+                </div>
+                
+                <button class="btn-card open-modal-btn">Request Callback</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="journey-section" id="expectations">
+        <div class="section-header fade-up">
+            <h2>The Learning Journey</h2>
+            <p>A structured, step-by-step roadmap designed to set clear expectations and ensure consistent growth.</p>
+        </div>
+        <div class="journey-grid anim-group-stagger">
+            <div class="journey-step fade-up">
+                <div class="step-number">1</div>
+                <h3>Diagnostic Assessment</h3>
+                <p>We analyze your current gameplay, strengths, and tactical blind spots through a series of evaluated matches.</p>
+            </div>
+            <div class="journey-step fade-up">
+                <div class="step-number">2</div>
+                <h3>Custom Study Plan</h3>
+                <p>You receive a personalized roadmap focusing on specific opening repertoires, middle-game plans, and end-game technique.</p>
+            </div>
+            <div class="journey-step fade-up">
+                <div class="step-number">3</div>
+                <h3>Intensive Training</h3>
+                <p>Engage in weekly puzzle labs, post-game engine analysis, and one-on-one coaching to refine your strategic vision.</p>
+            </div>
+            <div class="journey-step fade-up">
+                <div class="step-number">4</div>
+                <h3>Tournament Readiness</h3>
+                <p>Compete in simulated time-control events to build mental resilience, stamina, and prepare for official FIDE ratings.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section">
+        <div class="section-header fade-up">
+            <h2>Success Stories</h2>
+            <p>Hear from the champions who have transformed their game with our curriculum.</p>
+        </div>
+        <div class="testimonial-grid anim-group-stagger">
+            <div class="testimonial-card fade-up">
+                <div class="stars">★★★★★</div>
+                <p class="quote">"The post-game engine analysis sessions completely changed how I evaluate positions. I gained over 200 Elo points in just 4 months of training!"</p>
+                <div class="author-info">
+                    <strong>Arjun K.</strong>
+                    <span>State Level Player</span>
+                </div>
+            </div>
+            <div class="testimonial-card fade-up">
+                <div class="stars">★★★★★</div>
+                <p class="quote">"As an absolute beginner, the Level 1 program gave me the perfect foundation. The coaches are incredibly patient and highly analytical."</p>
+                <div class="author-info">
+                    <strong>Priya S.</strong>
+                    <span>Level 1 Graduate</span>
+                </div>
+            </div>
+            <div class="testimonial-card fade-up">
+                <div class="stars">★★★★★</div>
+                <p class="quote">"The weekly puzzle labs and practice tournaments removed my anxiety. I finally feel confident and composed playing in classical time controls."</p>
+                <div class="author-info">
+                    <strong>Rohan M.</strong>
+                    <span>FIDE Rated Player</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <a href="https://wa.me/918330954507" target="_blank" class="whatsapp-float">
+        <span class="whatsapp-icon">💬</span> Chat with us
+    </a>
+
+    <footer>
+        <h2 class="footer-logo" style="font-family: 'Playfair Display'; margin-bottom: 1rem; font-size: 2rem; cursor: pointer;">♞ Aspirant's Chess Academy</h2>
+        <p style="color: #94a3b8; max-width: 500px; margin: 0 auto;">Developing minds, building champions, and mastering the 64 squares since inception. Join our community of strategic thinkers.</p>
+        <div class="footer-bottom">
+            By continuing to use this website, you accept our Terms and Cookie Policy.<br><br>
+            &copy; 2026 Aspirant's Chess Academy. All rights reserved.
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="enrollModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; font-family: 'Playfair Display'; font-size: 1.8rem;">Begin Your Journey</h3>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.9rem;">Fill out the details below to securely connect with our enrollment team on WhatsApp.</p>
+            
+            <form id="waForm">
+                <div class="form-group">
+                    <input type="text" id="waName" required placeholder="E.g. Vishy Anand">
+                    <label>Student's Full Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="waEmail" required placeholder="vishy@example.com">
+                    <label>Email Address</label>
+                </div>
+                <div class="form-group">
+                    <select id="waLevel" required>
+                        <option value="" disabled selected>Select an option</option>
+                        <option value="Level 1: Pawn (Beginner)">Level 1: Pawn (Beginner)</option>
+                        <option value="Level 2: Knight (Intermediate)">Level 2: Knight (Intermediate)</option>
+                        <option value="Level 3/4: Queen (Advanced)">Level 3/4: Queen (Advanced)</option>
+                    </select>
+                    <label>Select Program Level</label>
+                </div>
+                <button type="submit" class="btn-card" style="margin-top: 1rem;">Connect via WhatsApp</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const progressBar = document.getElementById('scrollProgress');
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + "%";
+            });
+
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            // --- NEW: Mobile Menu Toggle Logic ---
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.getElementById('nav-links');
+            const mobileMenuIcon = mobileMenu.querySelector('i');
+
+            mobileMenu.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                if (navLinks.classList.contains('active')) {
+                    mobileMenuIcon.classList.remove('fa-bars');
+                    mobileMenuIcon.classList.add('fa-times');
+                } else {
+                    mobileMenuIcon.classList.remove('fa-times');
+                    mobileMenuIcon.classList.add('fa-bars');
+                }
+            });
+
+            // Close mobile menu when clicking a link
+            const navItems = navLinks.querySelectorAll('a, button');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    mobileMenuIcon.classList.remove('fa-times');
+                    mobileMenuIcon.classList.add('fa-bars');
+                });
+            });
+            // -------------------------------------
+
+            const staggerGroups = document.querySelectorAll('.anim-group-stagger');
+            staggerGroups.forEach(group => {
+                const children = group.querySelectorAll('.fade-up');
+                children.forEach((child, index) => {
+                    child.style.transitionDelay = `${index * 150}ms`; 
+                });
+            });
+
+            const fadeElements = document.querySelectorAll('.fade-up');
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 }; 
+            
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                        
+                        if(entry.target.classList.contains('stats-section')) {
+                           startCounters();
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            fadeElements.forEach(el => observer.observe(el));
+
+            const counters = document.querySelectorAll('.counter');
+            let countersStarted = false;
+
+            function startCounters() {
+                if(countersStarted) return;
+                countersStarted = true;
+
+                counters.forEach(counter => {
+                    counter.innerText = '0';
+                    const target = +counter.getAttribute('data-target');
+                    const suffix = counter.getAttribute('data-suffix') || '+';
+                    const speed = target > 100 ? 200 : 50; 
+
+                    const updateCount = () => {
+                        const count = +counter.innerText.replace(suffix, '');
+                        const inc = Math.max(1, Math.ceil(target / speed));
+
+                        if (count < target) {
+                            counter.innerText = (count + inc) + suffix;
+                            if((count+inc) > target) counter.innerText = target + suffix;
+                            setTimeout(updateCount, 15);
+                        } else {
+                            counter.innerText = target + suffix;
+                        }
+                    };
+                    updateCount();
+                });
+            }
+            
+            const statsSection = document.querySelector('.stats-section');
+            if(statsSection) observer.observe(statsSection); 
+
+            const modal = document.getElementById('enrollModal');
+            const openBtns = document.querySelectorAll('.open-modal-btn');
+            const closeBtn = document.getElementById('closeModal');
+
+            openBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            const closeModalFunc = () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            closeBtn.addEventListener('click', closeModalFunc);
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) closeModalFunc();
+            });
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape' && modal.classList.contains('active')) closeModalFunc();
+            });
+
+            const waForm = document.getElementById('waForm');
+            waForm.addEventListener('submit', function(e) {
+                e.preventDefault(); 
+
+                const name = document.getElementById('waName').value;
+                const email = document.getElementById('waEmail').value;
+                const level = document.getElementById('waLevel').value;
+
+                const message = `Hello Aspirant's Chess Academy! %0A%0AI would like to request a callback to begin my journey.%0A%0A*Name:* ${name}%0A*Email:* ${email}%0A*Interested Level:* ${level}%0A%0APlease let me know the next steps!`;
+
+                const targetNumber = "918330954507"; 
+                const waUrl = `https://wa.me/${targetNumber}?text=${message}`;
+
+                window.open(waUrl, '_blank');
+
+                closeModalFunc();
+                waForm.reset();
+            });
+        });
+    </script>
+</body>
+</html>
